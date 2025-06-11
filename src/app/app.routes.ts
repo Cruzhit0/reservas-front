@@ -15,6 +15,10 @@ export const routes: Routes = [
     loadChildren: () => import("./features/espacios/espacios.routes").then((m) => m.espaciosRoutes),
   },
   {
+    path: "perfil",
+    loadChildren: () => import("./features/usuarios/usuarios.routes").then((m) => m.usuariosRoutes),
+  },
+  {
     path: "**",
     redirectTo: "/espacios",
   },
