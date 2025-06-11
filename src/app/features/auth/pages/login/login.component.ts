@@ -1,0 +1,105 @@
+import { Component, inject, signal } from "@angular/core"
+import { CommonModule } from "@angular/common"
+import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms"
+import { Router, RouterModule } from "@angular/router"
+import { AuthService } from "../../../../core/services/auth.service"
+
+@Component({
+  selector: "app-login",
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  template: `
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-2xl font-bold text-center mb-6">Iniciar Sesión</h2>
+      
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <div class="mb-4">
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+            Email
+          </label>
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            [class.border-red-500]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
+          />
+          @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+            <p class="text-red-500 text-sm mt-1">Email es requerido</p>
+          }
+        </div>
+
+        <div class="mb-6">
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+            Contraseña
+          </label>
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            [class.border-red-500]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
+          />
+          @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
+            <p class="text-red-500 text-sm mt-1">Contraseña es requerida</p>
+          }
+        </div>
+
+        @if (error()) {
+          <div class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {{ error() }}
+          </div>
+        }
+
+        <button
+          type="submit"
+          [disabled]="loginForm.invalid || loading()"
+          class="w-full bg-primary-500 text-white py-2 px-4 rounded-md hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          @if (loading()) {
+            Iniciando sesión...
+          } @else {
+            Iniciar Sesión
+          }
+        </button>
+      </form>
+
+      <p class="text-center mt-4 text-gray-600">
+        ¿No tienes cuenta? 
+        <a routerLink="/auth/register" class="text-primary-500 hover:text-primary-600">
+          Regístrate aquí
+        </a>
+      </p>
+    </div>
+  `,
+})
+export class LoginComponent {
+  private fb = inject(FormBuilder)
+  private authService = inject(AuthService)
+  private router = inject(Router)
+
+  loading = signal(false)
+  error = signal<string | null>(null)
+
+  loginForm = this.fb.group({
+    email: ["", [Validators.required, Validators.email]],
+    password: ["", Validators.required],
+  })
+
+  onSubmit(): void {
+    if (this.loginForm.valid) {
+      this.loading.set(true)
+      this.error.set(null)
+
+      this.authService.login(this.loginForm.value as any).subscribe({
+        next: () => {
+          this.router.navigate(["/espacios"])
+        },
+        error: (err) => {
+          this.error.set("Credenciales inválidas")
+          this.loading.set(false)
+        },
+      })
+    }
+  }
+}

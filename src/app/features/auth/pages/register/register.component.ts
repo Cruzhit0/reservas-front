@@ -1,0 +1,127 @@
+import { Component, inject, signal } from "@angular/core"
+import { CommonModule } from "@angular/common"
+import { FormBuilder, ReactiveFormsModule, Validators } from "@angular/forms"
+import { Router, RouterModule } from "@angular/router"
+import { AuthService } from "../../../../core/services/auth.service"
+
+@Component({
+  selector: "app-register",
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  template: `
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-6">
+      <h2 class="text-2xl font-bold text-center mb-6">Registrarse</h2>
+      
+      <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+        <div class="mb-4">
+          <label for="nombre" class="block text-sm font-medium text-gray-700 mb-2">
+            Nombre Completo
+          </label>
+          <input
+            type="text"
+            id="nombre"
+            formControlName="nombre"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            [class.border-red-500]="registerForm.get('nombre')?.invalid && registerForm.get('nombre')?.touched"
+          />
+          @if (registerForm.get('nombre')?.invalid && registerForm.get('nombre')?.touched) {
+            <p class="text-red-500 text-sm mt-1">Nombre es requerido</p>
+          }
+        </div>
+
+        <div class="mb-4">
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+            Email
+          </label>
+          <input
+            type="email"
+            id="email"
+            formControlName="email"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            [class.border-red-500]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
+          />
+          @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+            <p class="text-red-500 text-sm mt-1">Email válido es requerido</p>
+          }
+        </div>
+
+        <div class="mb-6">
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+            Contraseña
+          </label>
+          <input
+            type="password"
+            id="password"
+            formControlName="password"
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-primary-500"
+            [class.border-red-500]="registerForm.get('password')?.invalid && registerForm.get('password')?.touched"
+          />
+          @if (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) {
+            <p class="text-red-500 text-sm mt-1">Contraseña debe tener al menos 6 caracteres</p>
+          }
+        </div>
+
+        @if (error()) {
+          <div class="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+            {{ error() }}
+          </div>
+        }
+
+        <button
+          type="submit"
+          [disabled]="registerForm.invalid || loading()"
+          class="w-full bg-primary-500 text-white py-2 px-4 rounded-md hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        >
+          @if (loading()) {
+            Registrando...
+          } @else {
+            Registrarse
+          }
+        </button>
+      </form>
+
+      <p class="text-center mt-4 text-gray-600">
+        ¿Ya tienes cuenta? 
+        <a routerLink="/auth/login" class="text-primary-500 hover:text-primary-600">
+          Inicia sesión aquí
+        </a>
+      </p>
+    </div>
+  `,
+})
+export class RegisterComponent {
+  private fb = inject(FormBuilder)
+  private authService = inject(AuthService)
+  private router = inject(Router)
+
+  loading = signal(false)
+  error = signal<string | null>(null)
+
+  registerForm = this.fb.group({
+    nombre: ["", Validators.required],
+    email: ["", [Validators.required, Validators.email]],
+    password: ["", [Validators.required, Validators.minLength(6)]],
+  })
+
+  onSubmit(): void {
+    if (this.registerForm.valid) {
+      this.loading.set(true)
+      this.error.set(null)
+
+      const registerData = {
+        ...this.registerForm.value,
+        tipo: "usuario" as const,
+      }
+
+      this.authService.register(registerData as any).subscribe({
+        next: () => {
+          this.router.navigate(["/espacios"])
+        },
+        error: (err) => {
+          this.error.set("Error al registrar usuario")
+          this.loading.set(false)
+        },
+      })
+    }
+  }
+}
