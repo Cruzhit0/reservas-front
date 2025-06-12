@@ -1,0 +1,76 @@
+import { Component, Input } from "@angular/core"
+import { CommonModule } from "@angular/common"
+import type { Espacio } from "../../../../core/models/espacio.model"
+
+@Component({
+  selector: "app-espacio-info",
+  standalone: true,
+  imports: [CommonModule],
+  template: `
+    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+      <div class="relative">
+        <img 
+          [src]="espacio.image_url" 
+          [alt]="espacio.nombre"
+          class="w-full h-80 object-cover"
+        />
+        <div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+        <div class="absolute bottom-6 left-6 text-white">
+          <h1 class="text-4xl font-bold mb-2">{{ espacio.nombre }}</h1>
+          <div class="flex items-center space-x-4">
+            <span class="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm">
+              {{ espacio.tipo | titlecase }}
+            </span>
+            <span class="px-3 py-1 bg-white/20 backdrop-blur-sm rounded-full text-sm">
+              {{ espacio.capacidad }} personas
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="p-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="text-center p-6 bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl">
+            <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h3M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 8h1m-1-4h1m4 4h1m-1-4h1"></path>
+              </svg>
+            </div>
+            <h3 class="font-semibold text-gray-700 mb-1">Tipo de Espacio</h3>
+            <p class="text-lg font-medium text-blue-600">{{ espacio.tipo | titlecase }}</p>
+          </div>
+          
+          <div class="text-center p-6 bg-gradient-to-br from-green-50 to-green-100 rounded-xl">
+            <div class="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center mx-auto mb-3">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+              </svg>
+            </div>
+            <h3 class="font-semibold text-gray-700 mb-1">Capacidad</h3>
+            <p class="text-lg font-medium text-green-600">{{ espacio.capacidad }} personas</p>
+          </div>
+          
+          <div class="text-center p-6 bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3"
+                 [class]="espacio.disponible ? 'bg-green-500' : 'bg-red-500'">
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                      [attr.d]="espacio.disponible ? 'M5 13l4 4L19 7' : 'M6 18L18 6M6 6l12 12'"></path>
+              </svg>
+            </div>
+            <h3 class="font-semibold text-gray-700 mb-1">Estado</h3>
+            <p [class]="espacio.disponible ? 'text-green-600' : 'text-red-600'" 
+               class="text-lg font-medium">
+              {{ espacio.disponible ? 'Disponible' : 'No disponible' }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <ng-content></ng-content>
+  `,
+})
+export class EspacioInfoComponent {
+  @Input({ required: true }) espacio!: Espacio
+}

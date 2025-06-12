@@ -6,9 +6,9 @@ import { EspaciosService } from "../../../../core/services/espacio.service"
 import { ReservasService } from "../../../../core/services/reservas.service"
 import { AuthService } from "../../../../core/services/auth.service"
 import type { Espacio, CalendarioResponse } from "../../../../core/models/espacio.model"
-import { EspacioInfoComponent } from "../components/espacio-info.component"
-import { CalendarioReservasComponent } from "../components/calendario-reservas.component"
-import { ModalReservaComponent, type ReservaFormData } from "../components/modal-reserva.component"
+import { EspacioInfoComponent } from "./espacio-info.component"
+import { CalendarioReservasComponent } from "./calendario-reservas.component"
+import { ModalReservaComponent, type ReservaFormData } from "./modal-reserva.component"
 
 @Component({
   selector: "app-espacio-detail",
