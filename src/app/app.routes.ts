@@ -21,6 +21,11 @@ export const routes: Routes = [
     canActivate: [authGuard],
   },
    {
+    path: "reservas",
+    loadChildren: () => import("./features/reservas/reservas.routes").then((m) => m.reservasRoutes),
+    canActivate: [authGuard],
+  },
+   {
     path: "admin",
     loadChildren: () => import("./features/admin/admin.routes").then((m) => m.adminRoutes),
     canActivate: [authGuard],

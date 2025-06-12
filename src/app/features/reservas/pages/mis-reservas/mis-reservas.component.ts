@@ -1,0 +1,193 @@
+import { Component, inject, signal, type OnInit } from "@angular/core"
+import { CommonModule } from "@angular/common"
+import { RouterModule } from "@angular/router"
+import { ReservasService } from "../../../../core/services/reservas.service"
+import type { Reserva } from "../../../../core/models/reserva.model"
+
+@Component({
+  selector: "app-mis-reservas",
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  template: `
+    <div class="space-y-6">
+      <div class="text-center">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Mis Reservas</h1>
+        <p class="text-gray-600">Gestiona tus reservas de espacios</p>
+      </div>
+
+      @if (loading()) {
+        <div class="text-center py-8">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+          <p class="mt-2 text-gray-600">Cargando reservas...</p>
+        </div>
+      }
+
+      @if (error()) {
+        <div class="text-center py-8">
+          <p class="text-red-600">{{ error() }}</p>
+        </div>
+      }
+
+      @if (reservas().length > 0) {
+        <div class="space-y-4">
+          @for (reserva of reservas(); track reserva.id) {
+            <div class="bg-white rounded-lg shadow-md p-6">
+              <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+                <div class="flex-1">
+                  <h3 class="text-xl font-semibold text-gray-900 mb-2">
+                    {{ reserva.espacio.nombre }}
+                  </h3>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
+                    <div>
+                      <span class="font-medium">Tipo:</span>
+                      <span class="ml-1">{{ reserva.espacio.tipo | titlecase }}</span>
+                    </div>
+                    <div>
+                      <span class="font-medium">Fecha:</span>
+                      <span class="ml-1">{{ formatDate(reserva.fecha) }}</span>
+                    </div>
+                    <div>
+                      <span class="font-medium">Horario:</span>
+                      <span class="ml-1">{{ reserva.hora_inicio }} - {{ reserva.hora_fin }}</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="mt-4 md:mt-0 flex items-center space-x-4">
+                  <span 
+                    [class]="getEstadoClass(reserva.estado)"
+                    class="px-3 py-1 rounded-full text-sm font-medium"
+                  >
+                    {{ reserva.estado | titlecase }}
+                  </span>
+                  @if (canCancelReserva(reserva)) {
+                    <button
+                      (click)="cancelReserva(reserva.id)"
+                      [disabled]="cancelLoading() === reserva.id"
+                      class="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 disabled:opacity-50 transition-colors"
+                    >
+                      @if (cancelLoading() === reserva.id) {
+                        Cancelando...
+                      } @else {
+                        Cancelar
+                      }
+                    </button>
+                  }
+                  <a 
+                    [routerLink]="['/espacios', reserva.espacio.id]"
+                    class="text-primary-500 hover:text-primary-600 font-medium"
+                  >
+                    Ver Espacio
+                  </a>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      } @else if (!loading()) {
+        <div class="text-center py-12">
+          <div class="text-gray-400 mb-4">
+            <svg class="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 4v10m6-10v10m-6-4h6" />
+            </svg>
+          </div>
+          <h3 class="text-lg font-medium text-gray-900 mb-2">No tienes reservas</h3>
+          <p class="text-gray-600 mb-4">¡Explora nuestros espacios y haz tu primera reserva!</p>
+          <a 
+            routerLink="/espacios"
+            class="bg-primary-500 text-white px-6 py-2 rounded-md hover:bg-primary-600 transition-colors"
+          >
+            Ver Espacios Disponibles
+          </a>
+        </div>
+      }
+
+      @if (successMessage()) {
+        <div class="fixed bottom-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg">
+          {{ successMessage() }}
+        </div>
+      }
+    </div>
+  `,
+})
+export class MisReservasComponent implements OnInit {
+  private reservasService = inject(ReservasService)
+
+  reservas = signal<Reserva[]>([])
+  loading = signal(false)
+  error = signal<string | null>(null)
+  cancelLoading = signal<number | null>(null)
+  successMessage = signal<string | null>(null)
+
+  ngOnInit(): void {
+    this.loadReservas()
+  }
+
+  private loadReservas(): void {
+    this.loading.set(true)
+    this.error.set(null)
+
+    this.reservasService.getMisReservas().subscribe({
+      next: (reservas) => {
+        this.reservas.set(reservas)
+        this.loading.set(false)
+      },
+      error: (err) => {
+        this.error.set("Error al cargar las reservas")
+        this.loading.set(false)
+      },
+    })
+  }
+
+  cancelReserva(id: number): void {
+    if (confirm("¿Estás seguro de que quieres cancelar esta reserva?")) {
+      this.cancelLoading.set(id)
+
+      this.reservasService.deleteReserva(id).subscribe({
+        next: () => {
+          this.reservas.update((reservas) => reservas.filter((r) => r.id !== id))
+          this.cancelLoading.set(null)
+          this.showSuccessMessage("Reserva cancelada exitosamente")
+        },
+        error: (err) => {
+          this.cancelLoading.set(null)
+          this.error.set("Error al cancelar la reserva")
+        },
+      })
+    }
+  }
+
+  canCancelReserva(reserva: Reserva): boolean {
+    const reservaDate = new Date(reserva.fecha)
+    const today = new Date()
+    return reservaDate > today && reserva.estado !== "cancelada"
+  }
+
+  getEstadoClass(estado: string): string {
+    switch (estado) {
+      case "confirmada":
+        return "bg-green-100 text-green-800"
+      case "pendiente":
+        return "bg-yellow-100 text-yellow-800"
+      case "cancelada":
+        return "bg-red-100 text-red-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  formatDate(dateString: string): string {
+    const date = new Date(dateString)
+    return date.toLocaleDateString("es-ES", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  }
+
+  private showSuccessMessage(message: string): void {
+    this.successMessage.set(message)
+    setTimeout(() => {
+      this.successMessage.set(null)
+    }, 3000)
+  }
+}
