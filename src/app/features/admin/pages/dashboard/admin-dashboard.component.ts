@@ -1,0 +1,190 @@
+import { Component, inject, signal, type OnInit } from "@angular/core"
+import { CommonModule } from "@angular/common"
+import { RouterModule } from "@angular/router"
+import { EspaciosService } from "../../../../core/services/espacio.service"
+import { ReservasService } from "../../../../core/services/reservas.service"
+import { UsuariosService } from "../../../../core/services/usuario.service"
+
+@Component({
+  selector: "app-dashboard",
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  template: `
+    <div class="space-y-6">
+      <div class="text-center">
+        <h1 class="text-3xl font-bold text-gray-900 mb-2">Panel de Administración</h1>
+        <p class="text-gray-600">Gestiona el sistema de reservas</p>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <div class="flex items-center">
+            <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+              </svg>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-600">Total Espacios</p>
+              <p class="text-2xl font-semibold text-gray-900">{{ stats().totalEspacios }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <div class="flex items-center">
+            <div class="p-3 rounded-full bg-green-100 text-green-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+              </svg>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-600">Reservas Activas</p>
+              <p class="text-2xl font-semibold text-gray-900">{{ stats().reservasActivas }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <div class="flex items-center">
+            <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+              </svg>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-600">Total Usuarios</p>
+              <p class="text-2xl font-semibold text-gray-900">{{ stats().totalUsuarios }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+          <div class="flex items-center">
+            <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+            </div>
+            <div class="ml-4">
+              <p class="text-sm font-medium text-gray-600">Espacios Activos</p>
+              <p class="text-2xl font-semibold text-gray-900">{{ stats().espaciosActivos }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Actions -->
+      <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold text-gray-900 mb-4">Acciones Rápidas</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <a 
+            routerLink="/admin/espacios"
+            class="flex items-center p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors"
+          >
+            <svg class="w-8 h-8 text-blue-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+            </svg>
+            <div>
+              <p class="font-medium text-gray-900">Gestionar Espacios</p>
+              <p class="text-sm text-gray-600">Crear y administrar espacios</p>
+            </div>
+          </a>
+
+          <a 
+            routerLink="/admin/reservas"
+            class="flex items-center p-4 bg-green-50 rounded-lg hover:bg-green-100 transition-colors"
+          >
+            <svg class="w-8 h-8 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+            </svg>
+            <div>
+              <p class="font-medium text-gray-900">Ver Reservas</p>
+              <p class="text-sm text-gray-600">Administrar todas las reservas</p>
+            </div>
+          </a>
+
+          <a 
+            routerLink="/admin/usuarios"
+            class="flex items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors"
+          >
+            <svg class="w-8 h-8 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"></path>
+            </svg>
+            <div>
+              <p class="font-medium text-gray-900">Gestionar Usuarios</p>
+              <p class="text-sm text-gray-600">Ver y administrar usuarios</p>
+            </div>
+          </a>
+
+          <a 
+            routerLink="/espacios"
+            class="flex items-center p-4 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors"
+          >
+            <svg class="w-8 h-8 text-yellow-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+            </svg>
+            <div>
+              <p class="font-medium text-gray-900">Vista Pública</p>
+              <p class="text-sm text-gray-600">Ver como usuario normal</p>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+  `,
+})
+export class DashboardComponent implements OnInit {
+  private espaciosService = inject(EspaciosService)
+  private reservasService = inject(ReservasService)
+  private usuariosService = inject(UsuariosService)
+
+  stats = signal({
+    totalEspacios: 0,
+    espaciosActivos: 0,
+    reservasActivas: 0,
+    totalUsuarios: 0,
+  })
+
+  ngOnInit(): void {
+    this.loadStats()
+  }
+
+  private loadStats(): void {
+    // Load spaces stats
+    this.espaciosService.getEspacios().subscribe({
+      next: (espacios) => {
+        this.stats.update((current) => ({
+          ...current,
+          totalEspacios: espacios.length,
+          espaciosActivos: espacios.filter((e) => e.disponible).length,
+        }))
+      },
+    })
+
+    // Load reservations stats
+    this.reservasService.getMisReservas().subscribe({
+      next: (reservas) => {
+        const today = new Date().toISOString().split("T")[0]
+        const activeReservations = reservas.filter((r) => r.fecha >= today && r.estado !== "cancelada").length
+
+        this.stats.update((current) => ({
+          ...current,
+          reservasActivas: activeReservations,
+        }))
+      },
+    })
+
+    // Load users stats
+    this.usuariosService.getAllUsers().subscribe({
+      next: (usuarios) => {
+        this.stats.update((current) => ({
+          ...current,
+          totalUsuarios: usuarios.length,
+        }))
+      },
+    })
+  }
+}

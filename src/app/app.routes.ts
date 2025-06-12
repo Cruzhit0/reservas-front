@@ -20,6 +20,11 @@ export const routes: Routes = [
     loadChildren: () => import("./features/usuarios/usuarios.routes").then((m) => m.usuariosRoutes),
     canActivate: [authGuard],
   },
+   {
+    path: "admin",
+    loadChildren: () => import("./features/admin/admin.routes").then((m) => m.adminRoutes),
+    canActivate: [authGuard],
+  },
   {
     path: "**",
     redirectTo: "/espacios",
