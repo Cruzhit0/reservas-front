@@ -7,6 +7,16 @@ export interface Espacio {
   disponible: boolean
 }
 
+export interface CreateEspacioRequest {
+  nombre: string
+  tipo: string
+  ubicacion: string
+  capacidad: number
+  disponible: boolean
+  descripcion: string
+  imagen: string
+}
+
 export interface DisponibilidadResponse {
   disponible: boolean
   espacio: {
@@ -45,4 +55,16 @@ export interface CalendarioResponse {
   }>
   dias_disponibles: string[]
   dias_ocupados: string[]
+}
+
+export interface CreateEspacioRequest {
+  nombre: string
+  tipo: string
+  capacidad: number
+  image_url: string
+  disponible: boolean
+}
+
+export interface UpdateEspacioRequest {
+  disponible: boolean
 }

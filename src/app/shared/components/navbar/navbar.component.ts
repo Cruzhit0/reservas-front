@@ -26,6 +26,13 @@ import { AuthService } from "../../../core/services/auth.service"
                   Mis Reservas
                 </a>
               }
+              @if (authService.isAuthenticated() && authService.currentUser()?.tipo === 'admin') {
+                <a routerLink="/admin" 
+                   routerLinkActive="text-primary-600 border-b-2 border-primary-600"
+                   class="text-gray-600 hover:text-primary-600 px-3 py-2 transition-colors">
+                  Administración
+                </a>
+              }
             </div>
           </div>
           

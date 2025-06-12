@@ -234,13 +234,16 @@ export class EspacioDetailComponent implements OnInit {
       this.reservaError.set(null)
       this.reservaSuccess.set(false)
 
+      const formValue = this.reservaForm.value
       const reservaData = {
         usuario_id: this.authService.currentUser()!.id,
         espacio_id: this.espacio()!.id,
-        ...this.reservaForm.value,
+        fecha: formValue.fecha!,
+        hora_inicio: formValue.hora_inicio!,
+        hora_fin: formValue.hora_fin!,
       }
 
-      this.reservasService.createReserva(reservaData as any).subscribe({
+      this.reservasService.createReserva(reservaData).subscribe({
         next: () => {
           this.reservaSuccess.set(true)
           this.reservaForm.reset()

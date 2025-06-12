@@ -46,8 +46,8 @@ export class AuthService {
 
   private setAuthData(response: AuthResponse): void {
     localStorage.setItem("token", response.token)
-    localStorage.setItem("user", JSON.stringify(response.user))
-    this.currentUser.set(response.user)
+    localStorage.setItem("user", JSON.stringify(response.usuario))
+    this.currentUser.set(response.usuario)
     this.isAuthenticated.set(true)
   }
 
@@ -65,4 +65,5 @@ export class AuthService {
       }
     }
   }
+
 }

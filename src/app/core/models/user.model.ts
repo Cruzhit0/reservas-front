@@ -19,5 +19,17 @@ export interface RegisterRequest {
 
 export interface AuthResponse {
   token: string
-  user: User
+  usuario: User
+}
+
+export interface UpdateEspacioRequest {
+  disponible: boolean
+}
+
+export interface CreateEspacioRequest {
+  nombre: string
+  tipo: string
+  capacidad: number
+  image_url: string
+  disponible: boolean
 }
