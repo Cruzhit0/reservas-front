@@ -1,4 +1,4 @@
 export const environment = {
     production: false,
-    API_URL: 'http://localhost:3000'
+    API_URL: 'https://reservas.api.dev.dtt.tja.ucb.edu.bo'
 };

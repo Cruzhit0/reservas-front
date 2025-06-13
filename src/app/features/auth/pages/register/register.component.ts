@@ -36,7 +36,7 @@ export class RegisterComponent {
 
       this.authService.register(registerData as any).subscribe({
         next: () => {
-          this.router.navigate(["/espacios"])
+          this.router.navigate(["/login"])
         },
         error: (err) => {
           this.error.set("Error al registrar usuario")
