@@ -1,4 +1,4 @@
-import { Component, inject } from "@angular/core"
+import { Component, inject, signal } from "@angular/core"
 import { CommonModule } from "@angular/common"
 import { RouterModule, Router } from "@angular/router"
 import { AuthService } from "../../../core/services/auth.service"
@@ -21,7 +21,7 @@ import { AuthService } from "../../../core/services/auth.service"
             </svg>
           </div>
           <h1 class="text-2xl font-bold bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent">
-            Sistema de Reservas
+            ReservaYa
           </h1>
         </div>
 
@@ -76,7 +76,7 @@ import { AuthService } from "../../../core/services/auth.service"
 
           <!-- Botón de Perfil -->
           <a routerLink="/perfil" 
-             class="flex items-center space-x-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 px-4 py-2 rounded-xl transition-all duration-200 font-medium">
+             class="hidden lg:flex items-center space-x-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 px-4 py-2 rounded-xl transition-all duration-200 font-medium">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
             </svg>
@@ -85,7 +85,7 @@ import { AuthService } from "../../../core/services/auth.service"
 
           <!-- Botón Cerrar Sesión -->
           <button (click)="logout()" 
-                  class="flex items-center space-x-2 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold px-5 py-2.5 rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-red-200">
+                  class="hidden lg:flex items-center space-x-2 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold px-5 py-2.5 rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-red-200">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
             </svg>
@@ -94,7 +94,7 @@ import { AuthService } from "../../../core/services/auth.service"
         } @else {
           <!-- Botones de Autenticación -->
           <a routerLink="/auth/login" 
-             class="flex items-center space-x-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 px-4 py-2.5 rounded-xl transition-all duration-200 font-medium">
+             class="hidden lg:flex items-center space-x-2 text-gray-600 hover:text-primary-600 hover:bg-primary-50 px-4 py-2.5 rounded-xl transition-all duration-200 font-medium">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
             </svg>
@@ -102,7 +102,7 @@ import { AuthService } from "../../../core/services/auth.service"
           </a>
 
           <a routerLink="/auth/register" 
-             class="flex items-center space-x-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold px-5 py-2.5 rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-primary-200">
+             class="hidden lg:flex items-center space-x-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold px-5 py-2.5 rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-primary-200">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
             </svg>
@@ -111,23 +111,138 @@ import { AuthService } from "../../../core/services/auth.service"
         }
 
         <!-- Menú Móvil (Hamburger) -->
-        <button class="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition-colors">
-          <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
+        <button (click)="toggleMobileMenu()" 
+                class="lg:hidden p-2 rounded-xl hover:bg-gray-100 transition-colors relative z-50">
+          @if (!isMobileMenuOpen()) {
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+          } @else {
+            <svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          }
         </button>
       </div>
     </div>
   </div>
 </nav>
+
+<!-- Modal Móvil -->
+@if (isMobileMenuOpen()) {
+  <div class="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" (click)="closeMobileMenu()">
+    <div class="fixed top-20 right-0 left-0 bg-white shadow-2xl border-t border-gray-100 max-h-[calc(100vh-5rem)] overflow-y-auto"
+         (click)="$event.stopPropagation()">
+      <div class="px-6 py-4 space-y-1">
+        
+        <!-- Enlaces de Navegación Móvil -->
+        <a routerLink="/espacios" 
+           (click)="closeMobileMenu()"
+           routerLinkActive="bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg"
+           class="flex items-center space-x-3 text-gray-600 hover:text-primary-600 hover:bg-primary-50 px-4 py-4 rounded-xl transition-all duration-200 font-medium w-full">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+          </svg>
+          <span>Espacios</span>
+        </a>
+
+        @if (authService.isAuthenticated()) {
+          <!-- Información del Usuario -->
+          <div class="flex items-center space-x-3 bg-gray-50 rounded-xl px-4 py-3 mb-4">
+            <div class="w-8 h-8 bg-gradient-to-r from-primary-500 to-blue-500 rounded-full flex items-center justify-center">
+              <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+              </svg>
+            </div>
+            <span class="text-gray-700 font-medium">Hola, {{ authService.currentUser()?.nombre }}</span>
+          </div>
+
+          <a routerLink="/reservas" 
+             (click)="closeMobileMenu()"
+             routerLinkActive="bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg"
+             class="flex items-center space-x-3 text-gray-600 hover:text-primary-600 hover:bg-primary-50 px-4 py-4 rounded-xl transition-all duration-200 font-medium w-full">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0h6m-6 0l-2 2m8-2l2 2m-2-2v12a2 2 0 01-2 2H8a2 2 0 01-2-2V9"></path>
+            </svg>
+            <span>Mis Reservas</span>
+          </a>
+
+          @if (authService.currentUser()?.tipo === 'admin') {
+            <a routerLink="/admin" 
+               (click)="closeMobileMenu()"
+               routerLinkActive="bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg"
+               class="flex items-center space-x-3 text-gray-600 hover:text-primary-600 hover:bg-primary-50 px-4 py-4 rounded-xl transition-all duration-200 font-medium w-full">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+              </svg>
+              <span>Administración</span>
+            </a>
+          }
+
+          <a routerLink="/perfil" 
+             (click)="closeMobileMenu()"
+             class="flex items-center space-x-3 text-gray-600 hover:text-primary-600 hover:bg-primary-50 px-4 py-4 rounded-xl transition-all duration-200 font-medium w-full">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>Perfil</span>
+          </a>
+
+          <!-- Línea divisoria -->
+          <div class="border-t border-gray-200 my-4"></div>
+
+          <button (click)="logout()" 
+                  class="flex items-center space-x-3 bg-gradient-to-r from-red-500 to-red-600 text-white font-semibold px-4 py-4 rounded-xl hover:from-red-600 hover:to-red-700 transition-all duration-200 w-full">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+            </svg>
+            <span>Cerrar Sesión</span>
+          </button>
+        } @else {
+          <!-- Botones de Autenticación para móvil -->
+          <a routerLink="/auth/login" 
+             (click)="closeMobileMenu()"
+             class="flex items-center space-x-3 text-gray-600 hover:text-primary-600 hover:bg-primary-50 px-4 py-4 rounded-xl transition-all duration-200 font-medium w-full">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+            </svg>
+            <span>Iniciar Sesión</span>
+          </a>
+
+          <a routerLink="/auth/register" 
+             (click)="closeMobileMenu()"
+             class="flex items-center space-x-3 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold px-4 py-4 rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-200 w-full">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+            </svg>
+            <span>Registrarse</span>
+          </a>
+        }
+      </div>
+    </div>
+  </div>
+}
   `,
 })
 export class NavbarComponent {
   authService = inject(AuthService)
   private router = inject(Router)
+  
+  // Signal para controlar el estado del modal móvil
+  isMobileMenuOpen = signal(false)
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen.update(value => !value)
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen.set(false)
+  }
 
   logout(): void {
     this.authService.logout()
     this.router.navigate(["/espacios"])
+    this.closeMobileMenu() 
   }
 }
