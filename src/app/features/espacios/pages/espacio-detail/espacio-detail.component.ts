@@ -125,7 +125,6 @@ onFechaCambio(fecha: Date): void {
     const horaInicio = `${hora.toString().padStart(2, "0")}:00`
     const horaFin = `${(hora + data.duracion).toString().padStart(2, "0")}:00`
 
-    // Usar el método formatearFecha para asegurar el formato correcto
     const fechaFormateada = this.formatearFecha(this.fechaSeleccionada()!)
 
     const reservaData = {
@@ -136,21 +135,16 @@ onFechaCambio(fecha: Date): void {
       hora_fin: horaFin,
     }
 
-    console.log("Enviando reserva con fecha:", fechaFormateada)
-    console.log(reservaData)
-
     this.reservasService.createReserva(reservaData).subscribe({
       next: () => {
         this.reservaSuccess.set(true)
-        // Recargar calendario para actualizar datos
-        this.loadCalendario(this.espacio()!.id)
-
+        // Recargar el calendario con la fecha actual de la reserva
+        this.loadCalendario(this.espacio()!.id, this.fechaSeleccionada()!)
         this.reservaLoading.set(false)
 
-        // Cerrar modal después de 2 segundos
         setTimeout(() => {
           this.cerrarModalConfirmacion()
-        }, 200)
+        }, 20)
       },
       error: (err) => {
         console.error("Error al crear reserva:", err) 

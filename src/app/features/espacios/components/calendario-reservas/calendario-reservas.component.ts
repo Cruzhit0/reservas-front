@@ -78,18 +78,17 @@ export class CalendarioReservasComponent implements OnChanges {
   }
 
   formatearFecha(fecha: Date): string {
-    // Asegurarse de que siempre devuelva YYYY-MM-DD
     const year = fecha.getFullYear()
     const month = (fecha.getMonth() + 1).toString().padStart(2, "0")
     const day = fecha.getDate().toString().padStart(2, "0")
     return `${year}-${month}-${day}`
   }
 
-  tieneReservaEnHora(hora: number): boolean {
+
+tieneReservaEnHora(hora: number): boolean {
     if (!this.calendario) return false
 
     const fechaStr = this.formatearFecha(this.fechaActual())
-    // console.log("Verificando reservas para fecha:", fechaStr, "hora:", hora) // Para depuración
 
     return this.calendario.reservas.some((r) => {
       if (r.fecha !== fechaStr) return false
@@ -97,27 +96,28 @@ export class CalendarioReservasComponent implements OnChanges {
       const horaInicio = Number.parseInt(r.hora_inicio.split(":")[0], 10)
       const horaFin = Number.parseInt(r.hora_fin.split(":")[0], 10)
 
+      // Verificar si la hora está dentro del rango de la reserva
       return hora >= horaInicio && hora < horaFin
     })
-  }
+}
 
-  esHoraDisponible(hora: number): boolean {
-    if (!this.calendario) return false
 
-    // Verificar si es horario pasado (solo para hoy)
-    const esHoy = this.esMismaFecha(this.fechaActual(), new Date())
-    const esHoraPasada = esHoy && hora <= new Date().getHours()
+esHoraDisponible(hora: number): boolean {
+  if (!this.calendario) return false
 
-    if (esHoraPasada) return false
-    if (this.tieneReservaEnHora(hora)) return false
+  const fechaActual = this.fechaActual()
+  const fechaHoy = new Date()
+  const esHoy = this.esMismaFecha(fechaActual, fechaHoy)
 
-    // Verificar si el día está en los días disponibles
-    const fechaStr = this.formatearFecha(this.fechaActual())
-    if (!this.calendario.dias_disponibles.includes(fechaStr)) return false
+  // 1. No permitir seleccionar días anteriores a hoy
+  if (fechaActual < new Date(fechaHoy.getFullYear(), fechaHoy.getMonth(), fechaHoy.getDate())) return false
 
-    return true
-  }
+  // 2. Verificar si es horario pasado (solo para hoy)
+  if (esHoy && hora <= fechaHoy.getHours()) return false
 
+  // 3. Verificar si la hora está reservada
+  return !this.tieneReservaEnHora(hora)
+}
   hayHorasDisponibles(): boolean {
     return this.horasDia().some((hora) => this.esHoraDisponible(hora))
   }
