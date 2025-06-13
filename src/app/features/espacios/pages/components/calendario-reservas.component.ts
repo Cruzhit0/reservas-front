@@ -10,6 +10,11 @@ export interface DiaCalendario {
   tieneReservas: boolean
 }
 
+export interface HoraSeleccionada {
+  fecha: Date
+  hora: number
+}
+
 @Component({
   selector: "app-calendario-reservas",
   standalone: true,
@@ -79,7 +84,7 @@ export interface DiaCalendario {
           @for (dia of diasCalendario(); track dia.fecha) {
             <div 
               [class]="obtenerClasesDia(dia)"
-              (click)="seleccionarFecha(dia)"
+              (click)="seleccionarDia(dia)"
               class="aspect-square p-3 cursor-pointer rounded-lg transition-all duration-200 relative group"
             >
               <span class="text-sm font-medium">{{ dia.fecha.getDate() }}</span>
@@ -114,7 +119,7 @@ export interface DiaCalendario {
           @for (dia of diasSemanaActual(); track dia.fecha) {
             <div 
               [class]="obtenerClasesDia(dia)"
-              (click)="seleccionarFecha(dia)"
+              (click)="seleccionarDia(dia)"
               class="aspect-square p-3 cursor-pointer rounded-lg transition-all duration-200 relative group"
             >
               <span class="text-sm font-medium">{{ dia.fecha.getDate() }}</span>
@@ -139,7 +144,12 @@ export interface DiaCalendario {
           
           <div class="divide-y divide-gray-200">
             @for (hora of horasDia(); track hora) {
-              <div class="flex p-3 hover:bg-gray-50">
+              <div 
+                class="flex p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                [class.bg-gray-50]="!esHoraDisponible(hora)"
+                [class.cursor-not-allowed]="!esHoraDisponible(hora)"
+                (click)="seleccionarHora(hora)"
+              >
                 <div class="w-20 font-medium text-gray-700">{{ hora }}:00</div>
                 <div class="flex-1 pl-4">
                   @if (tieneReservaEnHora(hora)) {
@@ -147,8 +157,10 @@ export interface DiaCalendario {
                       <p class="font-medium">Reservado</p>
                       <p class="text-sm text-gray-600">{{ getUsuarioReserva(hora) }}</p>
                     </div>
+                  } @else if (!esHoraDisponible(hora)) {
+                    <div class="text-gray-400 text-sm">No disponible</div>
                   } @else {
-                    <div class="text-gray-500 text-sm">Disponible</div>
+                    <div class="text-green-600 text-sm font-medium">Disponible</div>
                   }
                 </div>
               </div>
@@ -185,7 +197,7 @@ export interface DiaCalendario {
 })
 export class CalendarioReservasComponent implements OnChanges {
   @Input() calendario: CalendarioResponse | null = null
-  @Output() fechaSeleccionada = new EventEmitter<Date>()
+  @Output() horaSeleccionada = new EventEmitter<HoraSeleccionada>()
 
   readonly diasSemana = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"]
   readonly vistasCalendario = ["Día", "Semana", "Mes"]
@@ -289,11 +301,22 @@ export class CalendarioReservasComponent implements OnChanges {
     }
   }
 
-  seleccionarFecha(dia: DiaCalendario): void {
+  seleccionarDia(dia: DiaCalendario): void {
     if (!dia.esDelMesActual || !dia.disponible) return
 
+    // Cambiar a la vista de día y actualizar la fecha
     this.fechaActual.set(dia.fecha)
-    this.fechaSeleccionada.emit(dia.fecha)
+    this.vistaActual.set("Día")
+    this.generarDiasCalendario()
+  }
+
+  seleccionarHora(hora: number): void {
+    if (!this.esHoraDisponible(hora)) return
+
+    this.horaSeleccionada.emit({
+      fecha: this.fechaActual(),
+      hora,
+    })
   }
 
   esMismaFecha(fecha1: Date, fecha2: Date): boolean {
@@ -377,11 +400,23 @@ export class CalendarioReservasComponent implements OnChanges {
     })
   }
 
+  esHoraDisponible(hora: number): boolean {
+    if (!this.calendario) return false
+
+    // Verificar si es horario pasado (solo para hoy)
+    const esHoy = this.esMismaFecha(this.fechaActual(), new Date())
+    const esHoraPasada = esHoy && hora <= new Date().getHours()
+
+    if (esHoraPasada) return false
+    if (this.tieneReservaEnHora(hora)) return false
+
+    return true
+  }
+
   getUsuarioReserva(hora: number): string {
     if (!this.calendario) return ""
 
     const fechaStr = this.formatearFecha(this.fechaActual())
-    const horaStr = `${hora.toString().padStart(2, "0")}:00`
 
     const reserva = this.calendario.reservas.find((r) => {
       if (r.fecha !== fechaStr) return false

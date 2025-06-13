@@ -8,7 +8,7 @@ import { AuthService } from "../../../../core/services/auth.service"
 import type { Espacio, CalendarioResponse } from "../../../../core/models/espacio.model"
 import { EspacioInfoComponent } from "../components/espacio-info.component"
 import { CalendarioReservasComponent } from "../components/calendario-reservas.component"
-import { ModalReservaComponent, type ReservaFormData } from "../components/modal-reserva.component"
+import { ModalReservaComponent } from "../components/modal-reserva.component"
 
 @Component({
   selector: "app-espacio-detail",
@@ -44,7 +44,7 @@ import { ModalReservaComponent, type ReservaFormData } from "../components/modal
         @if (calendario()) {
           <app-calendario-reservas 
             [calendario]="calendario()" 
-            (fechaSeleccionada)="onFechaSeleccionada($event)"
+            (horaSeleccionada)="onHoraSeleccionada($event)"
           ></app-calendario-reservas>
         }
       }
@@ -57,17 +57,16 @@ import { ModalReservaComponent, type ReservaFormData } from "../components/modal
       }
     </div>
 
-    <!-- Modal de Reserva -->
-    @if (mostrarModalReserva() && fechaSeleccionada()) {
+    <!-- Modal de Confirmación de Reserva -->
+    @if (mostrarModalConfirmacion() && fechaSeleccionada() !== null && horaSeleccionada() !== null) {
       <app-modal-reserva
         [fecha]="fechaSeleccionada()!"
-        [calendario]="calendario()"
-        [usuario]="authService.currentUser()"
+        [hora]="horaSeleccionada()!"
         [loading]="reservaLoading()"
         [error]="reservaError()"
         [success]="reservaSuccess()"
-        (cerrar)="cerrarModalReserva()"
-        (reservar)="crearReserva($event)"
+        (cerrar)="cerrarModalConfirmacion()"
+        (confirmar)="confirmarReserva($event)"
       ></app-modal-reserva>
     }
   `,
@@ -75,7 +74,6 @@ import { ModalReservaComponent, type ReservaFormData } from "../components/modal
 export class EspacioDetailComponent implements OnInit {
   private route = inject(ActivatedRoute)
   private router = inject(Router)
-  private fb = inject(FormBuilder)
   private espaciosService = inject(EspaciosService)
   private reservasService = inject(ReservasService)
   authService = inject(AuthService)
@@ -88,9 +86,10 @@ export class EspacioDetailComponent implements OnInit {
   reservaError = signal<string | null>(null)
   reservaSuccess = signal(false)
 
-  // Modal y selección de fecha
-  mostrarModalReserva = signal(false)
+  // Modal y selección de fecha/hora
+  mostrarModalConfirmacion = signal(false)
   fechaSeleccionada = signal<Date | null>(null)
+  horaSeleccionada = signal<number | null>(null)
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get("id"))
@@ -140,35 +139,45 @@ export class EspacioDetailComponent implements OnInit {
     })
   }
 
-  onFechaSeleccionada(fecha: Date): void {
-    this.fechaSeleccionada.set(fecha)
-
-    if (this.authService.isAuthenticated() && this.espacio()?.disponible) {
-      this.mostrarModalReserva.set(true)
+  onHoraSeleccionada(data: any): void {
+    if (!this.authService.isAuthenticated() || !this.espacio()?.disponible) {
+      return
     }
+
+    this.fechaSeleccionada.set(data.fecha)
+    this.horaSeleccionada.set(data.hora)
+    this.mostrarModalConfirmacion.set(true)
   }
 
-  cerrarModalReserva(): void {
-    this.mostrarModalReserva.set(false)
+  cerrarModalConfirmacion(): void {
+    this.mostrarModalConfirmacion.set(false)
     this.reservaError.set(null)
     this.reservaSuccess.set(false)
   }
 
-  crearReserva(data: ReservaFormData): void {
-    if (!this.espacio() || !this.authService.currentUser()) return
+  confirmarReserva(data: any): void {
+    if (
+      !this.espacio() ||
+      !this.authService.currentUser() ||
+      !this.fechaSeleccionada() ||
+      this.horaSeleccionada() === null
+    ) {
+      return
+    }
 
     this.reservaLoading.set(true)
     this.reservaError.set(null)
     this.reservaSuccess.set(false)
 
-    const [hora, minutos] = data.hora_inicio.split(":").map(Number)
-    const horaFin = `${(hora + data.duracion).toString().padStart(2, "0")}:${minutos.toString().padStart(2, "0")}`
+    const hora = this.horaSeleccionada()!
+    const horaInicio = `${hora.toString().padStart(2, "0")}:00`
+    const horaFin = `${(hora + data.duracion).toString().padStart(2, "0")}:00`
 
     const reservaData = {
       usuario_id: this.authService.currentUser()!.id,
       espacio_id: this.espacio()!.id,
-      fecha: this.formatearFecha(data.fecha),
-      hora_inicio: data.hora_inicio,
+      fecha: this.formatearFecha(this.fechaSeleccionada()!),
+      hora_inicio: horaInicio,
       hora_fin: horaFin,
     }
 
@@ -183,7 +192,7 @@ export class EspacioDetailComponent implements OnInit {
 
         // Cerrar modal después de 2 segundos
         setTimeout(() => {
-          this.cerrarModalReserva()
+          this.cerrarModalConfirmacion()
         }, 2000)
       },
       error: (err) => {
