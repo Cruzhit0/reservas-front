@@ -1,0 +1,53 @@
+  <div class="max-w-6xl mx-auto space-y-8">
+      @if (espacio()) {
+        <!-- Información del espacio -->
+        <app-espacio-info [espacio]="espacio()!">
+          <!-- Alerta para usuarios no autenticados -->
+          @if (!authService.isAuthenticated()) {
+            <div class="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-xl p-6 text-center mt-6">
+              <div class="flex items-center justify-center mb-4">
+                <svg class="w-8 h-8 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                </svg>
+              </div>
+              <p class="text-yellow-800 text-lg mb-4">¡Inicia sesión para hacer reservas!</p>
+              <a href="/auth/login" 
+                class="inline-flex items-center px-6 py-3 bg-primary-500 text-white rounded-lg hover:bg-primary-600 transition-colors font-medium">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"></path>
+                </svg>
+                Iniciar Sesión
+              </a>
+            </div>
+          }
+        </app-espacio-info>
+
+        <!-- Calendario -->
+        @if (calendario()) {
+          <app-calendario-reservas 
+            [calendario]="calendario()" 
+            (horaSeleccionada)="onHoraSeleccionada($event)"
+          ></app-calendario-reservas>
+        }
+      }
+
+      @if (loading()) {
+        <div class="text-center py-16">
+          <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary-500 border-t-transparent"></div>
+          <p class="mt-4 text-gray-600 text-lg">Cargando información del espacio...</p>
+        </div>
+      }
+    </div>
+
+    <!-- Modal de Confirmación de Reserva -->
+    @if (mostrarModalConfirmacion() && fechaSeleccionada() !== null && horaSeleccionada() !== null) {
+      <app-modal-reserva
+        [fecha]="fechaSeleccionada()!"
+        [hora]="horaSeleccionada()!"
+        [loading]="reservaLoading()"
+        [error]="reservaError()"
+        [success]="reservaSuccess()"
+        (cerrar)="cerrarModalConfirmacion()"
+        (confirmar)="confirmarReserva($event)"
+      ></app-modal-reserva>
+    }

@@ -1,13 +1,4 @@
-import { Component, Input } from "@angular/core"
-import { CommonModule } from "@angular/common"
-import type { Espacio } from "../../../../core/models/espacio.model"
-
-@Component({
-  selector: "app-espacio-info",
-  standalone: true,
-  imports: [CommonModule],
-  template: `
-    <div class="bg-white rounded-xl shadow-lg overflow-hidden">
+   <div class="bg-white rounded-xl shadow-lg overflow-hidden">
       <div class="relative">
         <img 
           [src]="espacio.image_url" 
@@ -68,9 +59,4 @@ import type { Espacio } from "../../../../core/models/espacio.model"
       </div>
     </div>
 
-    <ng-content></ng-content>
-  `,
-})
-export class EspacioInfoComponent {
-  @Input({ required: true }) espacio!: Espacio
-}
+ 
