@@ -1,5 +1,5 @@
 import { Component, inject, signal, type OnInit } from "@angular/core"
-import { CommonModule } from "@angular/common"
+import { CommonModule, DatePipe } from "@angular/common"
 import { ReservasService } from "../../../../core/services/reservas.service"
 import type { Reserva } from "../../../../core/models/reserva.model"
 
@@ -7,10 +7,12 @@ import type { Reserva } from "../../../../core/models/reserva.model"
   selector: "app-admin-reservas",
   standalone: true,
   imports: [CommonModule],
-  templateUrl: "./admin-reservas.component.html", 
+  providers: [DatePipe], 
+  templateUrl: "./admin-reservas.component.html",
 })
 export class AdminReservasComponent implements OnInit {
   private reservasService = inject(ReservasService)
+  private datePipe = inject(DatePipe)
 
   reservas = signal<Reserva[]>([])
   filteredReservas = signal<Reserva[]>([])
@@ -26,15 +28,23 @@ export class AdminReservasComponent implements OnInit {
     this.loading.set(true)
     this.error.set(null)
 
-    // Note: This would need to be a different endpoint for admin to get ALL reservations
-    // For now, using the existing endpoint
-    this.reservasService.getMisReservas().subscribe({
+    const fechaConsulta = new Date()
+    const fechaStr = this.datePipe.transform(fechaConsulta, 'yyyy-MM-dd')
+
+    if (!fechaStr) {
+      this.error.set("Error al formatear la fecha")
+      this.loading.set(false)
+      return
+    }
+
+    this.reservasService.getReservasPorFecha(fechaStr).subscribe({
       next: (reservas) => {
         this.reservas.set(reservas)
         this.filteredReservas.set(reservas)
         this.loading.set(false)
       },
       error: (err) => {
+        console.error('Error loading reservas:', err)
         this.error.set("Error al cargar las reservas")
         this.loading.set(false)
       },
