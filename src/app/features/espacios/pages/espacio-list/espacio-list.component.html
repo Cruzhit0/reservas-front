@@ -1,89 +1,160 @@
-  <div class="space-y-6">
-      <div class="text-center">
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">Espacios Disponibles</h1>
-        <p class="text-gray-600">Encuentra el espacio perfecto para tu evento</p>
+<div class="space-y-8">
+  <!-- Header Section -->
+  <div class="text-center bg-gradient-to-r from-primary-50 to-blue-50 rounded-3xl p-8 shadow-sm">
+    <h1 class="text-4xl font-bold text-gray-900 mb-3 bg-gradient-to-r from-primary-600 to-blue-600 bg-clip-text text-transparent">
+      Espacios Disponibles
+    </h1>
+    <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+      Encuentra el espacio perfecto para tu evento y reserva de manera fácil y rápida
+    </p>
+  </div>
+
+  <!-- Filter Buttons -->
+  <div class="flex flex-wrap gap-3 justify-center p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
+    <button
+      (click)="filterByType('')"
+      [class]="selectedType() === '' ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-200 scale-105' : 'bg-white text-gray-700 border border-gray-200 hover:border-primary-200 hover:bg-primary-50'"
+      class="px-6 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105"
+    >
+      <span class="flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+        </svg>
+        Todos
+      </span>
+    </button>
+    <button
+      (click)="filterByType('salon')"
+      [class]="selectedType() === 'salon' ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-200 scale-105' : 'bg-white text-gray-700 border border-gray-200 hover:border-primary-200 hover:bg-primary-50'"
+      class="px-6 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105"
+    >
+      <span class="flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 21l4-4 4 4"></path>
+        </svg>
+        Salones
+      </span>
+    </button>
+    <button
+      (click)="filterByType('auditorio')"
+      [class]="selectedType() === 'auditorio' ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-200 scale-105' : 'bg-white text-gray-700 border border-gray-200 hover:border-primary-200 hover:bg-primary-50'"
+      class="px-6 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105"
+    >
+      <span class="flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4V2a1 1 0 011-1h8a1 1 0 011 1v2h3a1 1 0 011 1v4a1 1 0 01-1 1h-1v10a2 2 0 01-2 2H7a2 2 0 01-2-2V10H4a1 1 0 01-1-1V5a1 1 0 011-1h3z"></path>
+        </svg>
+        Auditorios
+      </span>
+    </button>
+    <button
+      (click)="filterByType('sala')"
+      [class]="selectedType() === 'sala' ? 'bg-gradient-to-r from-primary-500 to-primary-600 text-white shadow-lg shadow-primary-200 scale-105' : 'bg-white text-gray-700 border border-gray-200 hover:border-primary-200 hover:bg-primary-50'"
+      class="px-6 py-3 rounded-xl font-medium transition-all duration-200 transform hover:scale-105"
+    >
+      <span class="flex items-center gap-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+        </svg>
+        Salas
+      </span>
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  @if (loading()) {
+    <div class="text-center py-16">
+      <div class="relative">
+        <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-primary-100 border-t-primary-500"></div>
+        <div class="absolute inset-0 rounded-full bg-gradient-to-r from-primary-500 to-blue-500 opacity-20 animate-pulse"></div>
       </div>
+      <p class="mt-4 text-lg text-gray-600 font-medium">Cargando espacios...</p>
+    </div>
+  }
 
-      <div class="flex flex-wrap gap-4 justify-center">
-        <button
-          (click)="filterByType('')"
-          [class]="selectedType() === '' ? 'bg-primary-500 text-white' : 'bg-white text-gray-700 border'"
-          class="px-4 py-2 rounded-lg transition-colors hover:bg-primary-100"
-        >
-          Todos
-        </button>
-        <button
-          (click)="filterByType('salon')"
-          [class]="selectedType() === 'salon' ? 'bg-primary-500 text-white' : 'bg-white text-gray-700 border'"
-          class="px-4 py-2 rounded-lg transition-colors hover:bg-primary-100"
-        >
-          Salones
-        </button>
-        <button
-          (click)="filterByType('auditorio')"
-          [class]="selectedType() === 'auditorio' ? 'bg-primary-500 text-white' : 'bg-white text-gray-700 border'"
-          class="px-4 py-2 rounded-lg transition-colors hover:bg-primary-100"
-        >
-          Auditorios
-        </button>
-        <button
-          (click)="filterByType('sala')"
-          [class]="selectedType() === 'sala' ? 'bg-primary-500 text-white' : 'bg-white text-gray-700 border'"
-          class="px-4 py-2 rounded-lg transition-colors hover:bg-primary-100"
-        >
-          Salas
-        </button>
+  <!-- Error State -->
+  @if (error()) {
+    <div class="text-center py-16">
+      <div class="bg-red-50 border border-red-200 rounded-2xl p-8 max-w-md mx-auto">
+        <svg class="w-12 h-12 text-red-500 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <p class="text-red-700 font-medium">{{ error() }}</p>
       </div>
+    </div>
+  }
 
-      @if (loading()) {
-        <div class="text-center py-8">
-          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
-          <p class="mt-2 text-gray-600">Cargando espacios...</p>
+  <!-- Espacios Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+    @for (espacio of filteredEspacios(); track espacio.id) {
+      <div class="group bg-white rounded-3xl shadow-md overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-gray-100">
+        <!-- Image Container -->
+        <div class="relative overflow-hidden">
+          <img 
+            [src]="espacio.image_url" 
+            [alt]="espacio.nombre"
+            class="w-full h-56 object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+          <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+          
+          <!-- Availability Badge -->
+          <div class="absolute top-4 right-4">
+            <span 
+              [class]="espacio.disponible ? 'bg-green-500 text-white' : 'bg-red-500 text-white'"
+              class="px-3 py-1 rounded-full text-sm font-medium shadow-lg backdrop-blur-sm"
+            >
+              {{ espacio.disponible ? 'Disponible' : 'No disponible' }}
+            </span>
+          </div>
         </div>
-      }
 
-      @if (error()) {
-        <div class="text-center py-8">
-          <p class="text-red-600">{{ error() }}</p>
-        </div>
-      }
-
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (espacio of filteredEspacios(); track espacio.id) {
-          <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-            <img 
-              [src]="espacio.image_url" 
-              [alt]="espacio.nombre"
-              class="w-full h-48 object-cover"
-            />
-            <div class="p-4">
-              <h3 class="text-xl font-semibold text-gray-900 mb-2">{{ espacio.nombre }}</h3>
-              <div class="flex items-center justify-between text-sm text-gray-600 mb-3">
-                <span class="bg-gray-100 px-2 py-1 rounded">{{ espacio.tipo | titlecase }}</span>
-                <span>Capacidad: {{ espacio.capacidad }} personas</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span 
-                  [class]="espacio.disponible ? 'text-green-600' : 'text-red-600'"
-                  class="text-sm font-medium"
-                >
-                  {{ espacio.disponible ? 'Disponible' : 'No disponible' }}
-                </span>
-                <a 
-                  [routerLink]="['/espacios', espacio.id]"
-                  class="bg-primary-500 text-white px-4 py-2 rounded hover:bg-primary-600 transition-colors"
-                >
-                  Ver Detalles
-                </a>
-              </div>
+        <!-- Content -->
+        <div class="p-6">
+          <h3 class="text-xl font-bold text-gray-900 mb-3 group-hover:text-primary-600 transition-colors">
+            {{ espacio.nombre }}
+          </h3>
+          
+          <!-- Type and Capacity -->
+          <div class="flex items-center justify-between mb-4">
+            <span class="bg-gradient-to-r from-primary-100 to-blue-100 text-primary-700 px-4 py-2 rounded-full text-sm font-semibold">
+              {{ espacio.tipo | titlecase }}
+            </span>
+            <div class="flex items-center gap-2 text-gray-600">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+              </svg>
+              <span class="text-sm font-medium">{{ espacio.capacidad }} personas</span>
             </div>
           </div>
-        }
-      </div>
 
-      @if (filteredEspacios().length === 0 && !loading()) {
-        <div class="text-center py-8">
-          <p class="text-gray-600">No se encontraron espacios disponibles</p>
+          <!-- Action Button -->
+          <div class="pt-4 border-t border-gray-100">
+            <a 
+              [routerLink]="['/espacios', espacio.id]"
+              class="w-full inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary-500 to-primary-600 text-white font-semibold px-6 py-3 rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl"
+            >
+              <span>Ver Detalles</span>
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </a>
+          </div>
         </div>
-      }
+      </div>
+    }
+  </div>
+
+  <!-- Empty State -->
+  @if (filteredEspacios().length === 0 && !loading()) {
+    <div class="text-center py-16">
+      <div class="bg-gray-50 rounded-3xl p-12 max-w-md mx-auto border border-gray-100">
+        <svg class="w-16 h-16 text-gray-300 mx-auto mb-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+        </svg>
+        <h3 class="text-xl font-bold text-gray-900 mb-2">No hay espacios disponibles</h3>
+        <p class="text-gray-600">No se encontraron espacios que coincidan con tu búsqueda</p>
+      </div>
     </div>
+  }
+</div>
