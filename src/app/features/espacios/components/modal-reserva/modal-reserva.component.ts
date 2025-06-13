@@ -1,22 +1,8 @@
 import { Component, EventEmitter, Input, type OnChanges, Output, type SimpleChanges, signal } from "@angular/core"
 import { CommonModule, DatePipe } from "@angular/common"
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from "@angular/forms"
+import type { ConfirmacionReserva } from "../../../../core/models/reserva.model"
+import { FormBuilder,ReactiveFormsModule, Validators } from "@angular/forms"
 
-export interface HorarioDisponible {
-  hora: string
-  disponible: boolean
-  razon?: string
-}
-
-export interface ReservaFormData {
-  fecha: Date
-  hora_inicio: string
-  duracion: number
-}
-
-export interface ConfirmacionReserva {
-  duracion: number
-}
 
 
 @Component({

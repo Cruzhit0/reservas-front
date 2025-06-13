@@ -1,7 +1,8 @@
 import { Injectable } from "@angular/core"
 import {  HttpClient, HttpParams } from "@angular/common/http"
 import type { Observable } from "rxjs"
-import type { Espacio, DisponibilidadResponse, CalendarioResponse, CreateEspacioRequest } from "../models/espacio.model"
+import type { Espacio, DisponibilidadResponse, CreateEspacioRequest } from "../models/espacio.model"
+import type { CalendarioResponse } from "../models/calendario.model"
 import { environment } from "../../../environments/environment"
 
 @Injectable({

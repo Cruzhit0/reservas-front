@@ -1,11 +1,12 @@
 import { Component, inject, signal, type OnInit } from "@angular/core"
 import { CommonModule, DatePipe } from "@angular/common"
 import { ActivatedRoute, Router } from "@angular/router"
-import { FormBuilder } from "@angular/forms"
 import { EspaciosService } from "../../../../core/services/espacio.service"
 import { ReservasService } from "../../../../core/services/reservas.service"
 import { AuthService } from "../../../../core/services/auth.service"
-import type { Espacio, CalendarioResponse } from "../../../../core/models/espacio.model"
+import type { Espacio  } from "../../../../core/models/espacio.model"
+import type { CalendarioResponse,HoraSeleccionada } from "../../../../core/models/calendario.model"
+import { ConfirmacionReserva } from "../../../../core/models/reserva.model"
 import { EspacioInfoComponent } from "../../components/espacio-info/espacio-info.component"
 import { CalendarioReservasComponent } from "../../components/calendario-reservas/calendario-reservas.component"
 import { ModalReservaComponent } from "../../components/modal-reserva/modal-reserva.component"
@@ -17,8 +18,9 @@ import { ModalReservaComponent } from "../../components/modal-reserva/modal-rese
   providers: [DatePipe],
   templateUrl: "./espacio-detail.component.html",
 })
+
 export class EspacioDetailComponent implements OnInit {
-  private route = inject(ActivatedRoute)
+   private route = inject(ActivatedRoute)
   private router = inject(Router)
   private espaciosService = inject(EspaciosService)
   private reservasService = inject(ReservasService)
@@ -64,28 +66,31 @@ export class EspacioDetailComponent implements OnInit {
     })
   }
 
-  private loadCalendario(id: number): void {
-    const fechaInicio = new Date()
-    fechaInicio.setDate(1) // Primer día del mes actual
+ private loadCalendario(id: number, fecha?: Date): void {
+    const fechaConsulta = fecha || new Date()
+    const fechaStr = this.formatearFecha(fechaConsulta)
 
-    const fechaFin = new Date(fechaInicio)
-    fechaFin.setMonth(fechaFin.getMonth() + 2) // Dos meses después
+    console.log("Cargando calendario para fecha:", fechaStr)
 
-    const fechaInicioStr = this.formatearFecha(fechaInicio)
-    const fechaFinStr = this.formatearFecha(fechaFin)
-
-    this.espaciosService.getCalendario(id, fechaInicioStr, fechaFinStr).subscribe({
+    this.espaciosService.getCalendario(id, fechaStr, fechaStr).subscribe({
       next: (calendario) => {
         this.calendario.set(calendario)
         this.loading.set(false)
       },
-      error: () => {
+      error: (err) => {
+        console.error("Error al cargar calendario:", err)
         this.loading.set(false)
       },
     })
-  }
+}
 
-  onHoraSeleccionada(data: any): void {
+// Agregar método para escuchar cambios de fecha del calendario
+onFechaCambio(fecha: Date): void {
+    if (this.espacio()) {
+        this.loadCalendario(this.espacio()!.id, fecha)
+    }
+}
+  onHoraSeleccionada(data: HoraSeleccionada): void {
     if (!this.authService.isAuthenticated() || !this.espacio()?.disponible) {
       return
     }
@@ -101,7 +106,8 @@ export class EspacioDetailComponent implements OnInit {
     this.reservaSuccess.set(false)
   }
 
-  confirmarReserva(data: any): void {
+  // Actualizar el método confirmarReserva para asegurar el formato correcto de fecha
+  confirmarReserva(data: ConfirmacionReserva): void {
     if (
       !this.espacio() ||
       !this.authService.currentUser() ||
@@ -119,18 +125,23 @@ export class EspacioDetailComponent implements OnInit {
     const horaInicio = `${hora.toString().padStart(2, "0")}:00`
     const horaFin = `${(hora + data.duracion).toString().padStart(2, "0")}:00`
 
+    // Usar el método formatearFecha para asegurar el formato correcto
+    const fechaFormateada = this.formatearFecha(this.fechaSeleccionada()!)
+
     const reservaData = {
       usuario_id: this.authService.currentUser()!.id,
       espacio_id: this.espacio()!.id,
-      fecha: this.formatearFecha(this.fechaSeleccionada()!),
+      fecha: fechaFormateada, 
       hora_inicio: horaInicio,
       hora_fin: horaFin,
     }
 
+    console.log("Enviando reserva con fecha:", fechaFormateada)
+    console.log(reservaData)
+
     this.reservasService.createReserva(reservaData).subscribe({
       next: () => {
         this.reservaSuccess.set(true)
-
         // Recargar calendario para actualizar datos
         this.loadCalendario(this.espacio()!.id)
 
@@ -139,9 +150,10 @@ export class EspacioDetailComponent implements OnInit {
         // Cerrar modal después de 2 segundos
         setTimeout(() => {
           this.cerrarModalConfirmacion()
-        }, 2000)
+        }, 200)
       },
       error: (err) => {
+        console.error("Error al crear reserva:", err) 
         this.reservaError.set("Error al crear la reserva. Verifica que el horario esté disponible.")
         this.reservaLoading.set(false)
       },
@@ -149,6 +161,10 @@ export class EspacioDetailComponent implements OnInit {
   }
 
   private formatearFecha(fecha: Date): string {
-    return this.datePipe.transform(fecha, "yyyy-MM-dd") ?? ""
+    // Asegurarse de que siempre devuelva YYYY-MM-DD
+    const year = fecha.getFullYear()
+    const month = (fecha.getMonth() + 1).toString().padStart(2, "0")
+    const day = fecha.getDate().toString().padStart(2, "0")
+    return `${year}-${month}-${day}`
   }
 }

@@ -26,26 +26,7 @@ export interface DisponibilidadResponse {
   }>
 }
 
-export interface CalendarioResponse {
-  espacio: Espacio
-  periodo: {
-    fecha_inicio: string
-    fecha_fin: string
-  }
-  reservas: Array<{
-    id: number
-    fecha: string
-    hora_inicio: string
-    hora_fin: string
-    estado: string
-    usuario: {
-      id: number
-      nombre: string
-    }
-  }>
-  dias_disponibles: string[]
-  dias_ocupados: string[]
-}
+
 
 export interface CreateEspacioRequest {
   nombre: string
@@ -59,10 +40,3 @@ export interface UpdateEspacioRequest {
   disponible: boolean
 }
 
-export interface DiaCalendario {
-  fecha: Date
-  esDiaActual: boolean
-  esDelMesActual: boolean
-  disponible: boolean
-  tieneReservas: boolean
-}

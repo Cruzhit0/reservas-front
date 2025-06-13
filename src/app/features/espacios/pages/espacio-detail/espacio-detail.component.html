@@ -1,4 +1,4 @@
-  <div class="max-w-6xl mx-auto space-y-8">
+ <div class="max-w-4xl mx-auto space-y-8 px-4">
       @if (espacio()) {
         <!-- Información del espacio -->
         <app-espacio-info [espacio]="espacio()!">
@@ -22,11 +22,12 @@
           }
         </app-espacio-info>
 
-        <!-- Calendario -->
+        <!-- Calendario simplificado (solo vista de día) -->
         @if (calendario()) {
           <app-calendario-reservas 
             [calendario]="calendario()" 
             (horaSeleccionada)="onHoraSeleccionada($event)"
+            (fechaCambio)="onFechaCambio($event)"
           ></app-calendario-reservas>
         }
       }

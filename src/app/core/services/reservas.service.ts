@@ -13,6 +13,7 @@ export class ReservasService {
   constructor(private http: HttpClient) {}
 
   createReserva(reservaData: CreateReservaRequest): Observable<Reserva> {
+    console.log("Creating reservation with data:", reservaData)
     return this.http.post<Reserva>(this.apiUrl, reservaData)
   }
 
